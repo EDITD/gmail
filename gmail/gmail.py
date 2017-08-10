@@ -1,5 +1,6 @@
 import re
 import imaplib
+import socket
 
 from mailbox import Mailbox
 from utf import encode as encode_utf7, decode as decode_utf7
@@ -38,7 +39,17 @@ class Gmail():
         #         raise Exception('Connection failure.')
         #     self.imap = None
 
-        self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
+        # Gmail doesn't allow us to connect to it via IPv6, so the below resolves `imap.gmail.com`
+        # to its IPv4 address and connects using that.
+        # See https://blog.zensoftware.co.uk/2016/05/13/gmail-blocking-mdaemon-email-arriving-via-ipv6/
+        ipv4_gmail_connection = socket.socket(socket.AF_INET)
+        ipv4_gmail_connection.connect((self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT))
+
+        gmail_imap_ipv4_address = ipv4_gmail_connection.getpeername()[0]
+
+        ipv4_gmail_connection.close()
+
+        self.imap = imaplib.IMAP4_SSL(gmail_imap_ipv4_address, self.GMAIL_IMAP_PORT)
 
         # self.smtp = smtplib.SMTP(self.server,self.port)
         # self.smtp.set_debuglevel(self.debug)
