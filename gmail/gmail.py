@@ -47,6 +47,8 @@ class Gmail():
 
         gmail_imap_ipv4_address = ipv4_gmail_connection.getpeername()[0]
 
+        ipv4_gmail_connection.close()
+
         self.imap = imaplib.IMAP4_SSL(gmail_imap_ipv4_address, self.GMAIL_IMAP_PORT)
 
         # self.smtp = smtplib.SMTP(self.server,self.port)
